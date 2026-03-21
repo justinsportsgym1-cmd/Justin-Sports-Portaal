@@ -1046,7 +1046,11 @@ return snap.docs.map(d=>d.data());
 //  BOOT
 // ════════════════════════════════════════════════════
 async function boot(){
-// Restore email config
+// Show login screen immediately — no waiting
+hideLoading();
+go(‘loginScreen’);
+
+// Restore email config in background
 try{
 if(ejsCfg.service) document.getElementById(‘ejs-service’).value = ejsCfg.service;
 if(ejsCfg.tplOk)   document.getElementById(‘ejs-tpl-ok’).value  = ejsCfg.tplOk;
@@ -1062,28 +1066,17 @@ document.getElementById(‘fb-appId’).value      = FB_CONFIG.appId||’’;
 }
 }catch(e){}
 
-// Always show login within 3 seconds no matter what
-setTimeout(()=>{ hideLoading(); go(‘loginScreen’); }, 3000);
-
+// Load Firebase data in background
 if(!fbReady){ return; }
-
 try{
-const dataPromise = loadData();
-const timeout = new Promise(resolve => setTimeout(resolve, 4000));
-await Promise.race([dataPromise, timeout]);
-}catch(e){ console.warn(‘Firebase load error:’, e); }
-
-hideLoading();
-
-// Restore session
-try{
+await loadData();
+// Restore session after data loaded
 const savedEmail = LD(‘jspg_session’, null);
 if(savedEmail){
 const m = members.find(u=>u.email===savedEmail && u.status===‘approved’);
 if(m){ loginAs(m); return; }
 }
-}catch(e){}
-go(‘loginScreen’);
+}catch(e){ console.warn(‘Firebase load error:’, e); }
 
 // Live listeners for members (so admin sees new registrations instantly)
 if(db){
