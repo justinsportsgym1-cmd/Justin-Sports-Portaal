@@ -815,7 +815,7 @@ function startFbListeners() {
     <div class="frow">
       <div class="field">
         <label>Type *</label>
-        <select id="a-ty"><option value="code">Kortingscode</option><option value="free">Gratis product/dienst</option></select>
+        <select id="a-ty"><option value="deal">Aanbieding</option><option value="code">Kortingscode</option><option value="free">Gratis product/dienst</option></select>
       </div>
       <div class="field"><label>Kortingscode *</label><input type="text" id="a-co2" placeholder="bijv. JUSTIN10"></div>
     </div>
@@ -913,7 +913,7 @@ function startFbListeners() {
   <div class="field"><label>Bedrijfsnaam *</label><input type="text" id="e-co" placeholder="bijv. Gezond Bakker"></div>
   <div class="field">
     <label>Type *</label>
-    <select id="e-ty"><option value="code">Kortingscode</option><option value="free">Gratis product/dienst</option></select>
+    <select id="e-ty"><option value="deal">Aanbieding</option><option value="code">Kortingscode</option><option value="free">Gratis product/dienst</option></select>
   </div>
 </div>
 <div class="field"><label>Titel *</label><input type="text" id="e-ti" placeholder="bijv. 10% korting op alle salades"></div>
@@ -1201,7 +1201,7 @@ function renderDeals(){
     }
 
     return `<div class="deal-card${exhausted?' exhausted':''}">
-      <div class="dbadge ${d.type}">${d.type==='free'?'GRATIS':'KORTING'}</div>
+      <div class="dbadge ${d.type}">${d.type==='free'?'GRATIS':d.type==='deal'?'AANBIEDING':'KORTING'}</div>
       ${d.photo==='__jslogo__'
         ? `<div class="dicon"><img src="${JS_LOGO}" style="width:72px;height:72px;object-fit:contain;opacity:.9"></div>`
         : d.photo
@@ -1224,7 +1224,7 @@ function renderDeals(){
 }
 
 function activateDeal(id){
-  const d=deals.find(x=>x.id===id); if(!d||!currentUser)return;
+  const d=deals.find(x=>String(x.id)===String(id)); if(!d||!currentUser)return;
   if(!activ[currentUser.id]) activ[currentUser.id]=[];
   if(!activ[currentUser.id].includes(id)) activ[currentUser.id].push(id);
   persist();
@@ -1235,7 +1235,7 @@ function activateDeal(id){
 }
 
 function showCodeModal(id){
-  const d=deals.find(x=>x.id===id); if(!d)return;
+  const d=deals.find(x=>String(x.id)===String(id)); if(!d)return;
   modalDealId=id;
   const myUsage=usage[currentUser.id]||{};
   const useCount=myUsage[id]||0;
@@ -1483,7 +1483,7 @@ function renderMembers(){
 }
 
 function showDetail(id){
-  const m=members.find(x=>x.id===id); if(!m)return;
+  const m=members.find(x=>String(x.id)===String(id)); if(!m)return;
   document.getElementById('d-name').textContent=`${m.first} ${m.last}`;
   document.getElementById('d-memb').textContent=m.membership;
   const fields=[
@@ -1587,7 +1587,7 @@ function handlePhotoUpload(input){
 function deleteDeal(id){ deals=deals.filter(d=>d.id!==id); persist(); renderDeals(); renderAdminDeals(); showToast('🗑️ Aanbieding verwijderd.'); }
 
 function openEditDeal(id){
-  const d=deals.find(x=>x.id===id); if(!d)return;
+  const d=deals.find(x=>String(x.id)===String(id)); if(!d)return;
   document.getElementById('e-deal-id').value=id;
   document.getElementById('e-co').value=d.company||'';
   document.getElementById('e-ti').value=d.title||'';
