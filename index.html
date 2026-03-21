@@ -1220,10 +1220,9 @@ await fbSet(‘members’,id,m);
 updateBadge();renderMembers();showToast(‘Lid afgewezen.’);
 }
 async function deleteMember(id){
+await fbDel(‘members’,id);
 members=members.filter(x=>sid(x.id)!==sid(id));
 updateBadge();renderMembers();showToast(‘🗑️ Lid verwijderd.’);
-try{ await db.collection(‘members’).doc(sid(id)).delete(); }
-catch(e){ console.warn(‘delete member error:’,e); }
 }
 async function resetMemberUsage(id){
 const snap=await db.collection(‘usage’).where(‘memberId’,’==’,sid(id)).get();
@@ -1288,12 +1287,9 @@ showToast(‘✅ Aanbieding toegevoegd!’);
 }
 
 async function deleteDeal(id){
-// Remove from local array immediately and render
+await fbDel(‘deals’,id);
 deals=deals.filter(d=>sid(d.id)!==sid(id));
 renderDeals();renderAdminDeals();showToast(‘🗑️ Aanbieding verwijderd.’);
-// Then delete from Firebase
-try{ await db.collection(‘deals’).doc(sid(id)).delete(); }
-catch(e){ console.warn(‘delete deal error:’,e); }
 }
 
 function openEditDeal(id){
