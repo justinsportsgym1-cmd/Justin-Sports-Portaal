@@ -994,25 +994,17 @@ const LD = (k,fb)=>{ try{const v=localStorage.getItem(k);return v?JSON.parse(v):
 const SV = (k,v)=>{ try{localStorage.setItem(k,JSON.stringify(v));}catch{} };
 
 // ── DEFAULT DATA ──────────────────────────────────────
-const DEF_MEMBERS = [
-  {id:1,first:'Alex',  last:'de Vries', dob:'1995-04-12',email:'lid@gym.nl',   phone:'06-11111111',street:'Kerkstraat 3',  zip:'1234 AB',city:'Dorpshaven',membership:'Premium (€29/mnd)',         ref:'',password:'welkom123',isAdmin:false,status:'approved',joined:'2026-01-10'},
-  {id:2,first:'Justin',last:'Eigenaar', dob:'1990-01-01',email:'admin@gym.nl', phone:'06-00000000',street:'Sportlaan 1',   zip:'1234 XX',city:'Dorpshaven',membership:'Eigenaar',                  ref:'',password:'admin123', isAdmin:true, status:'approved',joined:'2025-06-01'},
-  {id:3,first:'Sara',  last:'Janssen',  dob:'2000-08-22',email:'sara@email.nl',phone:'06-22222222',street:'Hoofdstraat 8', zip:'1234 CD',city:'Dorpshaven',membership:'Basis (€19/mnd)',            ref:'Via vriendin',password:'sara123',  isAdmin:false,status:'pending', joined:'2026-03-19'},
-  {id:4,first:'Tom',   last:'Bakker',   dob:'1988-11-05',email:'tom@email.nl', phone:'06-33333333',street:'Nieuwstraat 22',zip:'1234 EF',city:'Dorpshaven',membership:'Personal Training (€59/mnd)',ref:'Google',password:'tom123',   isAdmin:false,status:'rejected',joined:'2026-02-14'},
-];
-const DEF_DEALS = [
-  {id:1,company:'De Groene Kom',      emoji:'🥗',title:'10% korting op alle salades',   desc:'Verse, lokale salades en bowls — perfect na je training.',            type:'code',code:'JUSTIN10',    expiry:'2026-06-30',maxPerPerson:2, maxTotal:0},
-  {id:2,company:'Bakkerij Smit',       emoji:'🍞',title:'Gratis proteïnebrood',           desc:'Haal gratis een proteïnebrood bij Bakkerij Smit op de Dorpsstraat.', type:'free',code:'JUSTINBROOD', expiry:'2026-05-31',maxPerPerson:1, maxTotal:50},
-  {id:3,company:'Juice Bar Fresh',     emoji:'🥤',title:'2 smoothies voor de prijs van 1',desc:'Geniet van twee smoothies voor de prijs van één.',                     type:'code',code:'JUSTIN2FOR1', expiry:'2026-07-15',maxPerPerson:3, maxTotal:0},
-  {id:4,company:'Fysiotherapie Dorpen',emoji:'💆',title:'Gratis intake consult',          desc:'Gratis kennismakingsgesprek bij Fysiotherapie Dorpen.',               type:'free',code:'JUSTINFYSIO', expiry:'2026-08-01',maxPerPerson:1, maxTotal:30},
-];
+// No local default data - everything comes from Firebase
+const DEF_MEMBERS = [];
+const DEF_DEALS = [];
 
-let members  = LD(SK.members,  DEF_MEMBERS);
-let deals    = LD(SK.deals,    DEF_DEALS);
-let usage    = LD(SK.usage,    {});    // how many times each member USED each deal
-let totaluse = LD(SK.totaluse, {});    // total uses per deal across all members
-let activ    = LD(SK.activ,    {});    // which deals each member has opened/activated
-let nextId   = LD(SK.nextid,   20);
+// Always start empty - Firebase is the source of truth
+let members  = [];
+let deals    = [];
+let usage    = {};
+let totaluse = {};
+let activ    = {};
+let nextId   = 20;
 let ejsCfg   = LD(SK.ejscfg,   {service:'',tplOk:'',tplNo:'',pubkey:'',adminEmail:''});
 
 let currentUser = null;
