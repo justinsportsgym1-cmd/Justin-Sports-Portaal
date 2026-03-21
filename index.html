@@ -599,7 +599,6 @@ function startFbListeners() {
       activ[r.memberId]=activ[r.memberId]||[];
       if(r.activated && !activ[r.memberId].includes(r.dealId)) activ[r.memberId].push(r.dealId);
     });
-    SV(SK.usage, usage); SV(SK.totaluse, totaluse); SV(SK.activ, activ);
     if(currentUser) renderDeals();
   }, e=>console.warn('usage listener:', e));
 }
@@ -1011,7 +1010,7 @@ let currentUser = null;
 let mFilter = 'all';
 let modalDealId = null; // deal currently shown in code modal
 
-function persist(){ SV(SK.members,members);SV(SK.deals,deals);SV(SK.usage,usage);SV(SK.totaluse,totaluse);SV(SK.activ,activ);SV(SK.nextid,nextId); }
+function persist(){ /* Firebase is source of truth - no localStorage for data */ }
 async function persistToFb(col, id, data){ await fbSave(col, String(id), data); }
 async function deleteFromFb(col, id){ await fbDel(col, String(id)); }
 
