@@ -555,6 +555,19 @@ margin-top:.1rem;
 </head>
 <body>
 
+<!-- FAILSAFE: force show login after 3 seconds -->
+
+<script>
+setTimeout(function(){
+  var ls = document.getElementById('loadingScreen');
+  var login = document.getElementById('loginScreen');
+  if(ls){ ls.style.display='none'; }
+  if(login && !document.getElementById('appScreen').classList.contains('active')){
+    login.classList.add('active');
+  }
+}, 3000);
+</script>
+
 <!-- LOADING SCREEN -->
 
 <div id="loadingScreen">
@@ -959,7 +972,7 @@ allow read, write: if true;
 </div>
 
 <div class="toast" id="toast"></div>
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module" defer>
 // ══════════════════════════════════════════════════════
 //  FIREBASE CONFIG — vul jouw eigen gegevens in
 //  Stap-voor-stap instructies staan in ⚙️ Beheer
