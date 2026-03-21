@@ -7,7 +7,7 @@
 <title>Justin Sports Private Gym — Ledenportaal</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <!-- EmailJS voor automatische e-mails -->
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<!-- EmailJS removed -->
 <style>
 /* ═══════════════════════════════════════════
    JUSTIN SPORTS LEDENPORTAAL — LUXE LICHT THEMA
@@ -1194,11 +1194,11 @@ function renderDeals(){
     if(exhausted){
       btnHtml=`<button class="btn-act maxed" disabled>Uitgeput</button>`;
     } else if(!activated){
-      btnHtml=`<button class="btn-act" onclick="activateDeal(${d.id})">Activeren</button>`;
+      btnHtml=`<button class="btn-act" onclick="activateDeal('${d.id}')">Activeren</button>`;
     } else if(maxedOut){
       btnHtml=`<button class="btn-act maxed" disabled>Max bereikt</button>`;
     } else {
-      btnHtml=`<button class="btn-act done" onclick="showCodeModal(${d.id})">✓ Bekijk code</button>`;
+      btnHtml=`<button class="btn-act done" onclick="showCodeModal('${d.id}')">✓ Bekijk code</button>`;
     }
 
     return `<div class="deal-card${exhausted?' exhausted':''}">
@@ -1452,22 +1452,22 @@ function renderMembers(){
     let acts='';
     if(m.status==='pending'){
       acts=`<div class="abtn-row">
-        <button class="btn-ok"  onclick="approveMember(${m.id})">✓ Goed</button>
-        <button class="btn-no"  onclick="rejectMember(${m.id})">✗ Af</button>
-        <button class="member-detail-btn" onclick="showDetail(${m.id})">Info</button>
+        <button class="btn-ok"  onclick="approveMember('${m.id}')">✓ Goed</button>
+        <button class="btn-no"  onclick="rejectMember('${m.id}')">✗ Af</button>
+        <button class="member-detail-btn" onclick="showDetail('${m.id}')">Info</button>
       </div>`;
     } else if(m.status==='approved'){
       acts=`<div class="abtn-row">
-        <button class="btn-no"  onclick="rejectMember(${m.id})">Intrekken</button>
-        <button class="btn-del" onclick="deleteMember(${m.id})">Verwijder</button>
-        <button class="member-detail-btn" onclick="showDetail(${m.id})">Info</button>
-        <button class="btn-reset" onclick="resetMemberUsage(${m.id})">🔄 Reset</button>
+        <button class="btn-no"  onclick="rejectMember('${m.id}')">Intrekken</button>
+        <button class="btn-del" onclick="deleteMember('${m.id}')">Verwijder</button>
+        <button class="member-detail-btn" onclick="showDetail('${m.id}')">Info</button>
+        <button class="btn-reset" onclick="resetMemberUsage('${m.id}')">🔄 Reset</button>
       </div>`;
     } else {
       acts=`<div class="abtn-row">
-        <button class="btn-ok"  onclick="approveMember(${m.id})">Herstellen</button>
-        <button class="btn-del" onclick="deleteMember(${m.id})">Verwijder</button>
-        <button class="member-detail-btn" onclick="showDetail(${m.id})">Info</button>
+        <button class="btn-ok"  onclick="approveMember('${m.id}')">Herstellen</button>
+        <button class="btn-del" onclick="deleteMember('${m.id}')">Verwijder</button>
+        <button class="member-detail-btn" onclick="showDetail('${m.id}')">Info</button>
       </div>`;
     }
     return`<tr>
@@ -1496,8 +1496,8 @@ function showDetail(id){
     <div class="mdetail-item"><div class="mdi-label">${l}</div><div class="mdi-val">${v}</div></div>`).join('');
   let acts='';
   if(m.status==='pending'){
-    acts=`<button class="btn-ok" onclick="approveMember(${m.id});closeModal('detail-overlay')">✓ Goedkeuren</button>
-          <button class="btn-no" onclick="rejectMember(${m.id});closeModal('detail-overlay')">✗ Afwijzen</button>`;
+    acts=`<button class="btn-ok" onclick="approveMember('${m.id}');closeModal('detail-overlay')">✓ Goedkeuren</button>
+          <button class="btn-no" onclick="rejectMember('${m.id}');closeModal('detail-overlay')">✗ Afwijzen</button>`;
   }
   document.getElementById('d-actions').innerHTML=acts;
   document.getElementById('detail-overlay').classList.add('open');
@@ -1705,8 +1705,8 @@ function renderAdminDeals(){
         </div>
       </div>
       <div style="display:flex;gap:.5rem;flex-shrink:0;align-items:center;margin-top:.25rem;">
-        <button class="btn-ok" onclick="openEditDeal(${d.id})" style="padding:.35rem .85rem">✏️ Wijzig</button>
-        <button class="btn-no" onclick="deleteDeal(${d.id})" style="padding:.35rem .85rem">Verwijder</button>
+        <button class="btn-ok" onclick="openEditDeal('${d.id}')" style="padding:.35rem .85rem">✏️ Wijzig</button>
+        <button class="btn-no" onclick="deleteDeal('${d.id}')" style="padding:.35rem .85rem">Verwijder</button>
       </div>
     </div>`;
   }).join('');
