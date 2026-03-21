@@ -1024,15 +1024,91 @@ async function persistToFb(col, id, data){ await fbSave(col, String(id), data); 
 async function deleteFromFb(col, id){ await fbDel(col, String(id)); }
 
 // ── BOOT ──────────────────────────────────────────────
-(function boot(){
-  // Restore EmailJS config fields
-  if(ejsCfg.service)  document.getElementById('ejs-service').value  = ejsCfg.service;
-  if(ejsCfg.tplOk)    document.getElementById('ejs-tpl-ok').value   = ejsCfg.tplOk;
-  if(ejsCfg.tplNo)    document.getElementById('ejs-tpl-no').value   = ejsCfg.tplNo;
-  if(ejsCfg.pubkey)   document.getElementById('ejs-pubkey').value   = ejsCfg.pubkey;
-  if(ejsCfg.adminEmail) document.getElementById('ejs-admin').value  = ejsCfg.adminEmail;
-  if(ejsCfg.pubkey)   emailjs.init(ejsCfg.pubkey);
+(async function boot(){
+  // Show loading screen
+  let ls = document.getElementById('loadingScreen');
+  if(!ls){
+    ls = document.createElement('div');
+    ls.id = 'loadingScreen';
+    ls.style.cssText = 'position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:1rem;';
+    ls.innerHTML = '<div style="width:36px;height:36px;border:3px solid #eee;border-top-color:#e8272d;border-radius:50%;animation:spin .7s linear infinite"></div><div style="font-size:.8rem;color:#888">Laden...</div>';
+    document.body.prepend(ls);
+  }
 
+  // Always load fresh from Firebase
+  try{
+    const [ms,ds,us] = await Promise.all([
+      db.collection('members').get(),
+      db.collection('deals').get(),
+      db.collection('usage').get()
+    ]);
+
+    members = ms.docs.map(d => d.data());
+    deals   = ds.docs.map(d => d.data());
+    usage={}; totaluse={}; activ={};
+
+    us.docs.forEach(d => {
+      const r=d.data();
+      usage[r.memberId] = usage[r.memberId]||{};
+      usage[r.memberId][r.dealId] = r.count||0;
+      totaluse[r.dealId] = (totaluse[r.dealId]||0)+(r.count||0);
+      activ[r.memberId] = activ[r.memberId]||[];
+      if(r.activated && !activ[r.memberId].includes(r.dealId)) activ[r.memberId].push(r.dealId);
+    });
+
+    // Seed only if truly empty
+    if(!members.length){
+      const admin = {id:'m1',first:'Justin',last:'Eigenaar',dob:'1990-01-01',email:'admin@gym.nl',phone:'06-00000000',street:'Sportlaan 1',zip:'1234 XX',city:'Paterswolde',membership:'Eigenaar',ref:'',password:'admin123',isAdmin:true,status:'approved',joined:today()};
+      await db.collection('members').doc('m1').set(admin);
+      members = [admin];
+    }
+    if(!deals.length){
+      const deal = {id:'d1',company:'De Groene Kom',emoji:'🥗',title:'10% korting op alle salades',desc:'Verse salades na je training.',type:'code',code:'JUSTIN10',expiry:'2026-06-30',maxPerPerson:2,maxTotal:0,photo:''};
+      await db.collection('deals').doc('d1').set(deal);
+      deals = [deal];
+    }
+
+    // Live listeners for real-time updates
+    db.collection('members').onSnapshot(snap=>{
+      members = snap.docs.map(d=>d.data());
+      updateBadge();
+      if(document.getElementById('tc-members')?.classList.contains('active')) renderMembers();
+    }, e=>console.warn('members:',e));
+
+    db.collection('deals').onSnapshot(snap=>{
+      deals = snap.docs.map(d=>d.data());
+      if(currentUser) renderDeals();
+      if(document.getElementById('tc-admin')?.classList.contains('active')) renderAdminDeals();
+    }, e=>console.warn('deals:',e));
+
+    db.collection('usage').onSnapshot(snap=>{
+      usage={}; totaluse={}; activ={};
+      snap.docs.forEach(d=>{
+        const r=d.data();
+        usage[r.memberId]=usage[r.memberId]||{};
+        usage[r.memberId][r.dealId]=r.count||0;
+        totaluse[r.dealId]=(totaluse[r.dealId]||0)+(r.count||0);
+        activ[r.memberId]=activ[r.memberId]||[];
+        if(r.activated&&!activ[r.memberId].includes(r.dealId)) activ[r.memberId].push(r.dealId);
+      });
+      if(currentUser) renderDeals();
+    }, e=>console.warn('usage:',e));
+
+  } catch(e){ console.warn('Firebase boot error:', e); }
+
+  // Restore email config
+  try{
+    if(ejsCfg.service) document.getElementById('ejs-service').value = ejsCfg.service;
+    if(ejsCfg.tplOk)   document.getElementById('ejs-tpl-ok').value  = ejsCfg.tplOk;
+    if(ejsCfg.tplNo)   document.getElementById('ejs-tpl-no').value  = ejsCfg.tplNo;
+    if(ejsCfg.pubkey)  document.getElementById('ejs-pubkey').value  = ejsCfg.pubkey;
+    if(ejsCfg.adminEmail) document.getElementById('ejs-admin').value = ejsCfg.adminEmail;
+  }catch(e){}
+
+  // Hide loading
+  ls.style.display='none';
+
+  // Restore session
   const s = LD(SK.session, null);
   if(s){ const m=members.find(u=>u.email===s&&u.status==='approved'); if(m){loginAs(m);return;} }
   go('loginScreen');
@@ -1491,8 +1567,10 @@ function addDeal(){
   else if(iconType==='emoji'){ emoji=v('a-em')||'🎁'; photo=''; }
   else { photo=document.getElementById('a-photo-data').value||''; emoji=''; }
   if(!co||!ti||!co2||!ex){showToast('⚠️ Vul alle verplichte velden in.',true);return;}
-  deals.unshift({id:Date.now(),company:co,emoji,title:ti,desc:de,type:ty,code:co2,expiry:ex,maxPerPerson:maxpp,maxTotal:maxtot,photo});
+  const newDeal={id:Date.now(),company:co,emoji,title:ti,desc:de,type:ty,code:co2,expiry:ex,maxPerPerson:maxpp,maxTotal:maxtot,photo};
+  deals.unshift(newDeal);
   persist();
+  db.collection('deals').doc(String(newDeal.id)).set(newDeal).catch(e=>console.warn(e));
   ['a-co','a-em','a-ti','a-de','a-co2','a-ex','a-maxpp','a-maxtot'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
   document.getElementById('a-maxpp').value='1';
   document.getElementById('a-photo-data').value='';
