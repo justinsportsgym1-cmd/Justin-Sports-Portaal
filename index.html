@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Justin Sports Private Gym — Ledenportaal</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<!-- EmailJS loaded dynamically -->
 <style>
 /* ═══════════════════════════════════════════
    JUSTIN SPORTS LEDENPORTAAL — LUXE LICHT THEMA
@@ -1057,7 +1057,7 @@ if(ejsCfg.tplOk)   document.getElementById(‘ejs-tpl-ok’).value  = ejsCfg.tpl
 if(ejsCfg.tplNo)   document.getElementById(‘ejs-tpl-no’).value  = ejsCfg.tplNo;
 if(ejsCfg.pubkey)  document.getElementById(‘ejs-pubkey’).value  = ejsCfg.pubkey;
 if(ejsCfg.adminEmail) document.getElementById(‘ejs-admin’).value= ejsCfg.adminEmail;
-if(ejsCfg.pubkey) emailjs.init(ejsCfg.pubkey);
+// emailjs loaded on demand
 if(FB_CONFIG){
 document.getElementById(‘fb-apiKey’).value     = FB_CONFIG.apiKey||’’;
 document.getElementById(‘fb-authDomain’).value = FB_CONFIG.authDomain||’’;
@@ -1628,9 +1628,17 @@ setTimeout(()=>location.reload(),1500);
 window.saveEmailConfig = function(){
 ejsCfg={service:v(‘ejs-service’).trim(),tplOk:v(‘ejs-tpl-ok’).trim(),tplNo:v(‘ejs-tpl-no’).trim(),pubkey:v(‘ejs-pubkey’).trim(),adminEmail:v(‘ejs-admin’).trim()};
 SV(‘jspg_ejs’,ejsCfg);
-if(ejsCfg.pubkey) emailjs.init(ejsCfg.pubkey);
+// emailjs loaded on demand
 const el=document.getElementById(‘ejs-saved’); el.style.display=‘block’;
 setTimeout(()=>el.style.display=‘none’,3000);
+}
+function loadEmailJS(cb){
+if(window.emailjs){ cb(); return; }
+const s=document.createElement(‘script’);
+s.src=‘https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js’;
+s.onload=()=>{ // emailjs loaded on demand cb(); };
+s.onerror=()=>cb();
+document.head.appendChild(s);
 }
 function sendEmail(type,params){
 if(!ejsCfg.service||!ejsCfg.pubkey)return;
